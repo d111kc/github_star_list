@@ -33,48 +33,51 @@ def group_by_language(repos: list[dict]) -> dict[str, list[dict]]:
     return dict(sorted(groups.items(), key=lambda x: -len(x[1])))
 
 
-def generate_readme(repos: list[dict], username: str) -> str:
-    by_language = group_by_language(repos)
-
+def generate_index(username: str, by_language: dict[str, list[dict]], total: int) -> str:
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-
+    
     lines = [
         f"# {username}'s Star List",
         "",
-        f"> Auto-generated list of all starred repositories. Total: **{len(repos)}** repos.",
-        f"> Last updated: {now}",
+        f"> Total: **{total}** repos | Last updated: {now}",
+        "",
+        "## Languages",
         "",
     ]
-
-    # TOC
-    lines.append("## Table of Contents")
-    lines.append("")
-    for lang in by_language:
-        anchor = lang.lower().replace(" ", "-").replace(".", "")
-        count = len(by_language[lang])
-        lines.append(f"- [{lang}](#{anchor}) ({count})")
-    lines.append("")
-
-    # Repos by language
-    lines.append("---")
-    lines.append("")
+    
     for lang, repos_list in by_language.items():
-        lines.append(f"## {lang}")
-        lines.append("")
-        lines.append("| Repository | Description | Stars | Updated |")
-        lines.append("| --- | --- | ---: | ---: |")
-        for repo in sorted(repos_list, key=lambda r: -r.get("stargazers_count", 0)):
-            name = repo["full_name"]
-            desc = (repo.get("description") or "-").replace("|", "\\|")
-            if len(desc) > 80:
-                desc = desc[:77] + "..."
-            stars = repo.get("stargazers_count", 0)
-            updated = repo.get("updated_at", "")[:10]
-            lines.append(
-                f"| [{name}](https://github.com/{name}) | {desc} | {stars} | {updated} |"
-            )
-        lines.append("")
+        slug = lang.lower().replace(" ", "-").replace(".", "").replace("#", "sharp")
+        count = len(repos_list)
+        lines.append(f"- [{lang}]({slug}.md) ({count})")
+    
+    lines.append("")
+    return "\n".join(lines)
 
+
+def generate_language_page(lang: str, repos_list: list[dict]) -> str:
+    slug = lang.lower().replace(" ", "-").replace(".", "").replace("#", "sharp")
+    
+    lines = [
+        f"# {lang}",
+        "",
+        f"[← Back to index](index.md)",
+        "",
+        "| Repository | Description | Stars | Updated |",
+        "| --- | --- | ---: | ---: |",
+    ]
+    
+    for repo in sorted(repos_list, key=lambda r: -r.get("stargazers_count", 0)):
+        name = repo["full_name"]
+        desc = (repo.get("description") or "-").replace("|", "\\|")
+        if len(desc) > 80:
+            desc = desc[:77] + "..."
+        stars = repo.get("stargazers_count", 0)
+        updated = repo.get("updated_at", "")[:10]
+        lines.append(
+            f"| [{name}](https://github.com/{name}) | {desc} | {stars} | {updated} |"
+        )
+    
+    lines.append("")
     return "\n".join(lines)
 
 
@@ -95,10 +98,27 @@ def main():
     repos = fetch_starred_repos(username, token)
     print(f"Found {len(repos)} starred repos")
 
-    readme = generate_readme(repos, username)
-    with open("README.md", "w", encoding="utf-8") as f:
-        f.write(readme)
-    print("README.md generated")
+    by_language = group_by_language(repos)
+    
+    os.makedirs("_site", exist_ok=True)
+    
+    # Generate index
+    index = generate_index(username, by_language, len(repos))
+    with open("_site/index.md", "w", encoding="utf-8") as f:
+        f.write(index)
+    
+    # Generate language pages
+    for lang, repos_list in by_language.items():
+        slug = lang.lower().replace(" ", "-").replace(".", "").replace("#", "sharp")
+        content = generate_language_page(lang, repos_list)
+        with open(f"_site/{slug}.md", "w", encoding="utf-8") as f:
+            f.write(content)
+    
+    # Add .nojekyll
+    with open("_site/.nojekyll", "w") as f:
+        f.write("")
+    
+    print(f"Generated {len(by_language) + 1} files in _site/")
 
 
 if __name__ == "__main__":

@@ -31,23 +31,31 @@ jobs:
       - name: Install dependencies
         run: uv sync
 
-      - name: Generate README
+      - name: Generate star list
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: uv run python generate_readme.py
 
-      - name: Prepare pages
-        run: |
-          mkdir -p _site
-          cp README.md _site/
-
-      - name: Deploy to GitHub Pages
+      - name: Deploy to star-list branch
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: _site
+          destination_dir: .
+          branch: star-list
           force_orphan: true
           user_name: 'github-actions[bot]'
           user_email: 'github-actions[bot]@users.noreply.github.com'
           commit_message: 'chore: update star list [skip ci]'
+
+  deploy:
+    needs: generate
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -50,10 +50,6 @@ def generate_css() -> str:
   box-sizing: border-box;
 }
 
-html {
-  overflow-x: hidden;
-}
-
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif;
   line-height: 1.6;
@@ -62,6 +58,7 @@ body {
   max-width: 900px;
   margin: 0 auto;
   padding: 2rem 1.5rem;
+  overflow-x: hidden;
 }
 
 header {
@@ -268,7 +265,7 @@ footer {
   }
   
   .lang-grid {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
   }
   
   .repo-item {

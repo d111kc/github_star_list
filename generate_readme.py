@@ -221,7 +221,7 @@ def generate_layout() -> str:
 """
 
 
-def generate_readme(username: str, by_language: dict[str, list[dict]], total: int) -> str:
+def generate_readme_index(username: str, by_language: dict[str, list[dict]], total: int) -> str:
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     
     lines = [
@@ -234,24 +234,32 @@ def generate_readme(username: str, by_language: dict[str, list[dict]], total: in
     ]
     
     for lang, repos_list in by_language.items():
-        lines.append(f"## {lang} ({len(repos_list)})")
-        lines.append("")
-        lines.append("| Repository | Description | Stars |")
-        lines.append("| --- | --- | ---: |")
-        
-        for repo in sorted(repos_list, key=lambda r: -r.get("stargazers_count", 0))[:20]:
-            name = repo["full_name"]
-            desc = (repo.get("description") or "-").replace("|", "\\|")
-            if len(desc) > 60:
-                desc = desc[:57] + "..."
-            stars = repo.get("stargazers_count", 0)
-            lines.append(f"| [{name}](https://github.com/{name}) | {desc} | {stars:,} |")
-        
-        if len(repos_list) > 20:
-            lines.append(f"| ... | *{len(repos_list) - 20} more repos* | |")
-        
-        lines.append("")
+        slug = lang.lower().replace(" ", "-").replace(".", "").replace("#", "sharp")
+        lines.append(f"- [{lang} ({len(repos_list)})]({slug}.md)")
     
+    lines.append("")
+    return "\n".join(lines)
+
+
+def generate_readme_lang(lang: str, repos_list: list[dict]) -> str:
+    lines = [
+        f"# {lang}",
+        "",
+        f"[← All Languages](README.md)",
+        "",
+        "| Repository | Description | Stars |",
+        "| --- | --- | ---: |",
+    ]
+    
+    for repo in sorted(repos_list, key=lambda r: -r.get("stargazers_count", 0)):
+        name = repo["full_name"]
+        desc = (repo.get("description") or "-").replace("|", "\\|")
+        if len(desc) > 60:
+            desc = desc[:57] + "..."
+        stars = repo.get("stargazers_count", 0)
+        lines.append(f"| [{name}](https://github.com/{name}) | {desc} | {stars:,} |")
+    
+    lines.append("")
     return "\n".join(lines)
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     
@@ -375,11 +383,22 @@ def main():
     
     print(f"Generated {len(by_language) + 1} files in _site/")
     
-    # Generate readable README
-    readme = generate_readme(username, by_language, len(repos))
-    with open("README.md", "w", encoding="utf-8") as f:
-        f.write(readme)
-    print("Generated README.md")
+    # Generate readable README files
+    os.makedirs("readme_files", exist_ok=True)
+    
+    # Generate README index
+    readme_index = generate_readme_index(username, by_language, len(repos))
+    with open("readme_files/README.md", "w", encoding="utf-8") as f:
+        f.write(readme_index)
+    
+    # Generate language files
+    for lang, repos_list in by_language.items():
+        slug = lang.lower().replace(" ", "-").replace(".", "").replace("#", "sharp")
+        content = generate_readme_lang(lang, repos_list)
+        with open(f"readme_files/{slug}.md", "w", encoding="utf-8") as f:
+            f.write(content)
+    
+    print(f"Generated {len(by_language) + 1} files in readme_files/")
 
 
 if __name__ == "__main__":

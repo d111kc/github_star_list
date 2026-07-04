@@ -48,8 +48,8 @@ jobs:
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: .
-          include_files: README.md
+          publish_dir: readme_files
+          destination_dir: .
           publish_branch: readme
           force_orphan: true
           user_name: 'github-actions[bot]'

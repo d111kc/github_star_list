@@ -50,7 +50,7 @@ def generate_css() -> str:
   box-sizing: border-box;
 }
 
-html, body {
+html {
   overflow-x: hidden;
 }
 
@@ -220,9 +220,7 @@ a:hover {
 }
 
 .back-to-top {
-  position: fixed;
-  bottom: 2rem;
-  right: 2rem;
+  position: absolute;
   width: 48px;
   height: 48px;
   background: #0366d6;
@@ -233,11 +231,10 @@ a:hover {
   justify-content: center;
   text-decoration: none;
   box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-  transition: opacity 0.3s, transform 0.3s, box-shadow 0.3s;
+  transition: opacity 0.3s, box-shadow 0.3s;
   z-index: 9999;
   opacity: 0;
   pointer-events: none;
-  transform: translateZ(0);
 }
 
 .back-to-top.visible {
@@ -246,12 +243,7 @@ a:hover {
 }
 
 .back-to-top.visible:hover {
-  transform: translateZ(0) translateY(-2px);
   box-shadow: 0 6px 16px rgba(0,0,0,0.3);
-}
-
-main {
-  overflow: hidden;
 }
 
 footer {
@@ -324,13 +316,21 @@ def generate_layout(username: str) -> str:
   <script>
     (function() {{
       var btn = document.getElementById('backToTop');
-      window.addEventListener('scroll', function() {{
-        if (window.scrollY > 300) {{
+      function update() {{
+        var scrollY = window.pageYOffset || document.documentElement.scrollTop;
+        var viewH = window.innerHeight;
+        if (scrollY > 300) {{
           btn.classList.add('visible');
         }} else {{
           btn.classList.remove('visible');
         }}
-      }});
+        btn.style.position = 'absolute';
+        btn.style.top = (scrollY + viewH - 80) + 'px';
+        btn.style.right = '2rem';
+      }}
+      window.addEventListener('scroll', update, {{passive: true}});
+      window.addEventListener('resize', update, {{passive: true}});
+      update();
     }})();
   </script>
 </body>

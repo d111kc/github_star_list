@@ -1,0 +1,15 @@
+[project]
+name = "github-star-list"
+version = "0.1.0"
+description = "Generate a README list of all your GitHub starred repositories"
+requires-python = ">=3.10"
+dependencies = [
+    "requests>=2.31.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

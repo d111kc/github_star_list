@@ -358,7 +358,7 @@ def main():
         f.write(layout)
     
     # Generate index
-    index = generate_index(username, by_language, len(repos))
+    index = generate_readme(username, by_language, len(repos))
     with open("_site/index.md", "w", encoding="utf-8") as f:
         f.write(index)
     

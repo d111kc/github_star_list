@@ -50,7 +50,7 @@ def generate_css() -> str:
   box-sizing: border-box;
 }
 
-html {
+html, body {
   overflow-x: hidden;
 }
 
@@ -237,7 +237,6 @@ a:hover {
   z-index: 9999;
   opacity: 0;
   pointer-events: none;
-  -webkit-transform: translateZ(0);
   transform: translateZ(0);
 }
 
@@ -249,6 +248,10 @@ a:hover {
 .back-to-top.visible:hover {
   transform: translateZ(0) translateY(-2px);
   box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+}
+
+main {
+  overflow: hidden;
 }
 
 footer {

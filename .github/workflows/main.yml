@@ -31,7 +31,7 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: uv run python generate_readme.py
 
-      - name: Deploy to star-list branch
+      - name: Deploy to gh-pages branch
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -39,6 +39,7 @@ jobs:
           destination_dir: .
           publish_branch: gh-pages
           force_orphan: true
+          disable_nojekyll: true
           user_name: 'github-actions[bot]'
           user_email: 'github-actions[bot]@users.noreply.github.com'
           commit_message: 'chore: update star list [skip ci]'

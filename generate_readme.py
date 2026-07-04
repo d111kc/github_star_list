@@ -60,7 +60,7 @@ def generate_language_page(lang: str, repos_list: list[dict]) -> str:
     lines = [
         f"# {lang}",
         "",
-        f"[← Back to index](index.md)",
+        f"[← Back to README](README.md)",
         "",
         "| Repository | Description | Stars | Updated |",
         "| --- | --- | ---: | ---: |",
@@ -102,9 +102,9 @@ def main():
     
     os.makedirs("_site", exist_ok=True)
     
-    # Generate index
+    # Generate index as README.md
     index = generate_index(username, by_language, len(repos))
-    with open("_site/index.md", "w", encoding="utf-8") as f:
+    with open("_site/README.md", "w", encoding="utf-8") as f:
         f.write(index)
     
     # Generate language pages

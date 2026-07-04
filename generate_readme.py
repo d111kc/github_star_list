@@ -50,19 +50,14 @@ def generate_css() -> str:
   box-sizing: border-box;
 }
 
-html {
-  overflow-x: hidden;
-}
-
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif;
   line-height: 1.6;
   color: #24292e;
   background: #fff;
-  max-width: 100vw;
+  max-width: 900px;
   margin: 0 auto;
-  padding: 2rem 1rem;
-  overflow-x: hidden;
+  padding: 2rem 1.5rem;
 }
 
 header {

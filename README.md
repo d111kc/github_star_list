@@ -1,7 +1,5 @@
 # GitHub Star List
 
-[![Generate Star List](https://github.com/interset-wq/github_star_list/actions/workflows/main.yml/badge.svg)](https://github.com/interset-wq/github_star_list/actions/workflows/main.yml)
-
 > Auto-generate a beautiful README listing all your GitHub starred repositories, organized by language.
 
 <p align="center">

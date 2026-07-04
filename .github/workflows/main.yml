@@ -37,12 +37,16 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: uv run python generate_readme.py
 
+      - name: Prepare pages
+        run: |
+          mkdir -p _site
+          cp README.md _site/
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: .
-          include_files: README.md
+          publish_dir: _site
           force_orphan: true
           user_name: 'github-actions[bot]'
           user_email: 'github-actions[bot]@users.noreply.github.com'

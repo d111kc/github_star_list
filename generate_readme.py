@@ -33,11 +33,23 @@ def group_by_language(repos: list[dict]) -> dict[str, list[dict]]:
     return dict(sorted(groups.items(), key=lambda x: -len(x[1])))
 
 
+def generate_config(username: str) -> str:
+    return f"""title: {username}'s Star List
+description: Auto-generated list of all GitHub starred repositories
+theme: jekyll-theme-cayman
+baseurl: ""
+url: ""
+"""
+
+
 def generate_index(username: str, by_language: dict[str, list[dict]], total: int) -> str:
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     
     lines = [
-        f"# {username}'s Star List",
+        "---",
+        "layout: default",
+        f"title: {username}'s Star List",
+        "---",
         "",
         f"> Total: **{total}** repos | Last updated: {now}",
         "",
@@ -48,7 +60,7 @@ def generate_index(username: str, by_language: dict[str, list[dict]], total: int
     for lang, repos_list in by_language.items():
         slug = lang.lower().replace(" ", "-").replace(".", "").replace("#", "sharp")
         count = len(repos_list)
-        lines.append(f"- [{lang}]({slug}.md) ({count})")
+        lines.append(f"- [{lang}]({slug}.html) ({count})")
     
     lines.append("")
     return "\n".join(lines)
@@ -58,9 +70,14 @@ def generate_language_page(lang: str, repos_list: list[dict]) -> str:
     slug = lang.lower().replace(" ", "-").replace(".", "").replace("#", "sharp")
     
     lines = [
+        "---",
+        "layout: default",
+        f"title: {lang}",
+        "---",
+        "",
         f"# {lang}",
         "",
-        f"[← Back to README](README.md)",
+        "[← Back to README](README.html)",
         "",
         "| Repository | Description | Stars | Updated |",
         "| --- | --- | ---: | ---: |",
@@ -102,6 +119,11 @@ def main():
     
     os.makedirs("_site", exist_ok=True)
     
+    # Generate _config.yml
+    config = generate_config(username)
+    with open("_site/_config.yml", "w", encoding="utf-8") as f:
+        f.write(config)
+    
     # Generate index as README.md
     index = generate_index(username, by_language, len(repos))
     with open("_site/README.md", "w", encoding="utf-8") as f:
@@ -113,10 +135,6 @@ def main():
         content = generate_language_page(lang, repos_list)
         with open(f"_site/{slug}.md", "w", encoding="utf-8") as f:
             f.write(content)
-    
-    # Add .nojekyll
-    with open("_site/.nojekyll", "w") as f:
-        f.write("")
     
     print(f"Generated {len(by_language) + 1} files in _site/")
 

@@ -247,19 +247,22 @@ def generate_readme_lang(lang: str, repos_list: list[dict]) -> str:
         "",
         f"[← All Languages](README.md)",
         "",
-        "| Repository | Description | Stars |",
-        "| --- | --- | ---: |",
     ]
     
     for repo in sorted(repos_list, key=lambda r: -r.get("stargazers_count", 0)):
         name = repo["full_name"]
+        owner = name.split("/")[0]
         desc = (repo.get("description") or "-").replace("|", "\\|")
         if len(desc) > 60:
             desc = desc[:57] + "..."
         stars = repo.get("stargazers_count", 0)
-        lines.append(f"| [{name}](https://github.com/{name}) | {desc} | {stars:,} |")
+        lines.append(f"## [{name}](https://github.com/{name})")
+        lines.append("")
+        lines.append(f"![{owner}](https://github.com/{owner}.png =40x40) {desc}")
+        lines.append("")
+        lines.append(f"⭐ {stars:,}")
+        lines.append("")
     
-    lines.append("")
     return "\n".join(lines)
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     
@@ -371,11 +374,12 @@ def main():
         f.write(index)
     
     # Generate README.md for GitHub view
+    site_url = f"https://{username}.github.io/{repo_name}/"
     readme_content = f"""# {username}'s Star List
 
 > **{len(repos)}** repos starred
 
-[View Static Site]({{site.baseurl}}/)
+[View Static Site →]({site_url})
 """
     with open("_site/README.md", "w", encoding="utf-8") as f:
         f.write(readme_content)

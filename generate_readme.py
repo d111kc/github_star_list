@@ -272,10 +272,7 @@ footer {
   }
   
   .back-to-top {
-    width: 40px;
-    height: 40px;
-    bottom: 1.5rem;
-    right: 1.5rem;
+    display: none;
   }
 }
 """
@@ -293,12 +290,12 @@ def generate_layout(username: str) -> str:
   <link rel="stylesheet" href="{{{{ site.baseurl }}}}/assets/style.css">
 </head>
 <body>
-  {{{{ % if page.title == site.title %}}}}
+  {{% if page.title == site.title %}}
   <header>
     <h1>{{{{ site.title }}}}</h1>
     <p>{{{{ site.description }}}}</p>
   </header>
-  {{{{ % endif %}}}}
+  {{% endif %}}
   
   <main>
     {{{{ content }}}}

@@ -221,7 +221,38 @@ def generate_layout() -> str:
 """
 
 
-def generate_index(username: str, by_language: dict[str, list[dict]], total: int) -> str:
+def generate_readme(username: str, by_language: dict[str, list[dict]], total: int) -> str:
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    
+    lines = [
+        f"# {username}'s Star List",
+        "",
+        f"> **{total}** repos starred | Updated: {now}",
+        "",
+        "---",
+        "",
+    ]
+    
+    for lang, repos_list in by_language.items():
+        lines.append(f"## {lang} ({len(repos_list)})")
+        lines.append("")
+        lines.append("| Repository | Description | Stars |")
+        lines.append("| --- | --- | ---: |")
+        
+        for repo in sorted(repos_list, key=lambda r: -r.get("stargazers_count", 0))[:20]:
+            name = repo["full_name"]
+            desc = (repo.get("description") or "-").replace("|", "\\|")
+            if len(desc) > 60:
+                desc = desc[:57] + "..."
+            stars = repo.get("stargazers_count", 0)
+            lines.append(f"| [{name}](https://github.com/{name}) | {desc} | {stars:,} |")
+        
+        if len(repos_list) > 20:
+            lines.append(f"| ... | *{len(repos_list) - 20} more repos* | |")
+        
+        lines.append("")
+    
+    return "\n".join(lines)
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     
     lines = [
@@ -343,6 +374,12 @@ def main():
             f.write(content)
     
     print(f"Generated {len(by_language) + 1} files in _site/")
+    
+    # Generate readable README
+    readme = generate_readme(username, by_language, len(repos))
+    with open("README.md", "w", encoding="utf-8") as f:
+        f.write(readme)
+    print("Generated README.md")
 
 
 if __name__ == "__main__":

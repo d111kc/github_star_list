@@ -366,13 +366,19 @@ def main():
         f.write(layout)
     
     # Generate index
-    index = generate_readme(username, by_language, len(repos))
+    index = generate_readme_index(username, by_language, len(repos))
     with open("_site/index.md", "w", encoding="utf-8") as f:
         f.write(index)
     
     # Generate README.md for GitHub view
+    readme_content = f"""# {username}'s Star List
+
+> **{len(repos)}** repos starred
+
+[View Static Site]({{site.baseurl}}/)
+"""
     with open("_site/README.md", "w", encoding="utf-8") as f:
-        f.write(index)
+        f.write(readme_content)
     
     # Generate language pages
     for lang, repos_list in by_language.items():

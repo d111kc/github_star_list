@@ -354,7 +354,7 @@ def generate_site_index(username: str, by_language: dict[str, list[dict]], total
     for lang, repos_list in by_language.items():
         slug = lang.lower().replace(" ", "-").replace(".", "").replace("#", "sharp")
         count = len(repos_list)
-        lines.append(f'  <a href="{{{{ site.baseurl }}}}/{slug}.html" class="lang-card" target="_blank">')
+        lines.append(f'  <a href="{{{{ site.baseurl }}}}/{slug}.html" class="lang-card">')
         lines.append(f'    <span class="lang-name">{lang}</span>')
         lines.append(f'    <span class="lang-count">{count}</span>')
         lines.append("  </a>")

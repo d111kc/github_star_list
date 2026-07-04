@@ -33,8 +33,7 @@ def group_by_language(repos: list[dict]) -> dict[str, list[dict]]:
     return dict(sorted(groups.items(), key=lambda x: -len(x[1])))
 
 
-def generate_readme(repos: list[dict]) -> str:
-    username = get_username_from_repo(repos[0]["full_name"]) if repos else "unknown"
+def generate_readme(repos: list[dict], username: str) -> str:
     by_language = group_by_language(repos)
 
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -96,7 +95,7 @@ def main():
     repos = fetch_starred_repos(username, token)
     print(f"Found {len(repos)} starred repos")
 
-    readme = generate_readme(repos)
+    readme = generate_readme(repos, username)
     with open("README.md", "w", encoding="utf-8") as f:
         f.write(readme)
     print("README.md generated")

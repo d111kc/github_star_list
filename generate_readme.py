@@ -50,6 +50,10 @@ def generate_css() -> str:
   box-sizing: border-box;
 }
 
+html {
+  overflow-x: hidden;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif;
   line-height: 1.6;
@@ -270,6 +274,13 @@ footer {
   .repo-header {
     flex-direction: column;
     align-items: flex-start;
+  }
+  
+  .back-to-top {
+    width: 40px;
+    height: 40px;
+    bottom: 1.5rem;
+    right: 1.5rem;
   }
 }
 """

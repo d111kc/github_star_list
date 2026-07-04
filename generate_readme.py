@@ -33,11 +33,11 @@ def group_by_language(repos: list[dict]) -> dict[str, list[dict]]:
     return dict(sorted(groups.items(), key=lambda x: -len(x[1])))
 
 
-def generate_config(username: str) -> str:
+def generate_config(username: str, repo_name: str) -> str:
     return f"""title: {username}'s Star List
 description: Auto-generated list of all GitHub starred repositories
 theme: jekyll-theme-cayman
-baseurl: ""
+baseurl: /{repo_name}
 url: ""
 """
 
@@ -120,7 +120,8 @@ def main():
     os.makedirs("_site", exist_ok=True)
     
     # Generate _config.yml
-    config = generate_config(username)
+    repo_name = repo_full_name.split("/")[-1] if repo_full_name else ""
+    config = generate_config(username, repo_name)
     with open("_site/_config.yml", "w", encoding="utf-8") as f:
         f.write(config)
     

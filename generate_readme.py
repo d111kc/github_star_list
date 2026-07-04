@@ -331,6 +331,10 @@ def main():
     with open("_site/index.md", "w", encoding="utf-8") as f:
         f.write(index)
     
+    # Generate README.md for GitHub view
+    with open("_site/README.md", "w", encoding="utf-8") as f:
+        f.write(index)
+    
     # Generate language pages
     for lang, repos_list in by_language.items():
         slug = lang.lower().replace(" ", "-").replace(".", "").replace("#", "sharp")

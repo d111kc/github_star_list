@@ -1,0 +1,13 @@
+title: interset-wq's Star List
+description: Auto-generated list of all GitHub starred repositories
+baseurl: /github_star_list
+url: ""
+
+plugins:
+  - jekyll-seo-tag
+
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default

@@ -33,20 +33,13 @@ def group_by_language(repos: list[dict]) -> dict[str, list[dict]]:
     return dict(sorted(groups.items(), key=lambda x: -len(x[1])))
 
 
+# ==================== gh-pages site functions ====================
+
 def generate_config(username: str, repo_name: str) -> str:
     return f"""title: {username}'s Star List
 description: Auto-generated list of all GitHub starred repositories
 baseurl: /{repo_name}
 url: ""
-
-plugins:
-  - jekyll-seo-tag
-
-defaults:
-  - scope:
-      path: ""
-    values:
-      layout: default
 """
 
 
@@ -144,6 +137,9 @@ a:hover {
 }
 
 .repo-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
   padding: 1rem;
   border: 1px solid #e1e4e8;
   border-radius: 8px;
@@ -152,6 +148,18 @@ a:hover {
 
 .repo-item:hover {
   border-color: #0366d6;
+}
+
+.repo-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.repo-info {
+  flex: 1;
+  min-width: 0;
 }
 
 .repo-header {
@@ -196,6 +204,11 @@ a:hover {
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   }
   
+  .repo-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
   .repo-header {
     flex-direction: column;
     align-items: flex-start;
@@ -220,6 +233,78 @@ def generate_layout() -> str:
 </html>
 """
 
+
+def generate_site_index(username: str, by_language: dict[str, list[dict]], total: int) -> str:
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    
+    lines = [
+        "---",
+        "layout: default",
+        f"title: {username}'s Star List",
+        "---",
+        "",
+        '<div class="stats">',
+        f'  <span class="stat-number">{total}</span> repos starred',
+        f'  <span class="stat-date">Last updated: {now}</span>',
+        "</div>",
+        "",
+        '<div class="lang-grid">',
+    ]
+    
+    for lang, repos_list in by_language.items():
+        slug = lang.lower().replace(" ", "-").replace(".", "").replace("#", "sharp")
+        count = len(repos_list)
+        lines.append(f'  <a href="{{{{ site.baseurl }}}}/{slug}.html" class="lang-card">')
+        lines.append(f'    <span class="lang-name">{lang}</span>')
+        lines.append(f'    <span class="lang-count">{count}</span>')
+        lines.append("  </a>")
+    
+    lines.append("</div>")
+    lines.append("")
+    return "\n".join(lines)
+
+
+def generate_language_page(lang: str, repos_list: list[dict]) -> str:
+    lines = [
+        "---",
+        f"title: {lang}",
+        "---",
+        "",
+        f'<a href="{{{{ site.baseurl }}}}/" class="back-link">← All Languages</a>',
+        "",
+        f"<h1>{lang}</h1>",
+        f"<p>{len(repos_list)} repositories</p>",
+        "",
+        '<div class="repo-list">',
+    ]
+    
+    for repo in sorted(repos_list, key=lambda r: -r.get("stargazers_count", 0)):
+        name = repo["full_name"]
+        owner = name.split("/")[0]
+        desc = (repo.get("description") or "").replace("|", "\\|")
+        if len(desc) > 100:
+            desc = desc[:97] + "..."
+        stars = repo.get("stargazers_count", 0)
+        updated = repo.get("updated_at", "")[:10]
+        lines.append(f'<div class="repo-item">')
+        lines.append(f'  <img src="https://github.com/{owner}.png" class="repo-avatar" alt="{owner}">')
+        lines.append(f'  <div class="repo-info">')
+        lines.append(f'    <div class="repo-header">')
+        lines.append(f'      <a href="https://github.com/{name}" class="repo-name">{name}</a>')
+        lines.append(f'      <span class="repo-stars">★ {stars:,}</span>')
+        lines.append(f"    </div>")
+        if desc:
+            lines.append(f'    <p class="repo-desc">{desc}</p>')
+        lines.append(f'    <span class="repo-date">Updated: {updated}</span>')
+        lines.append(f"  </div>")
+        lines.append(f"</div>")
+    
+    lines.append("</div>")
+    lines.append("")
+    return "\n".join(lines)
+
+
+# ==================== readme branch functions ====================
 
 def generate_readme_index(username: str, by_language: dict[str, list[dict]], total: int) -> str:
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -258,76 +343,15 @@ def generate_readme_lang(lang: str, repos_list: list[dict]) -> str:
         stars = repo.get("stargazers_count", 0)
         lines.append(f"## [{name}](https://github.com/{name})")
         lines.append("")
-        lines.append(f"![{owner}](https://github.com/{owner}.png =40x40) {desc}")
+        lines.append(f'<img src="https://github.com/{owner}.png" width="20" height="20"> {desc}')
         lines.append("")
         lines.append(f"⭐ {stars:,}")
         lines.append("")
     
     return "\n".join(lines)
-    now = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    
-    lines = [
-        "---",
-        "layout: default",
-        f"title: {username}'s Star List",
-        "---",
-        "",
-        '<div class="stats">',
-        f'  <span class="stat-number">{total}</span> repos starred',
-        f'  <span class="stat-date">Last updated: {now}</span>',
-        "</div>",
-        "",
-        '<div class="lang-grid">',
-    ]
-    
-    for lang, repos_list in by_language.items():
-        slug = lang.lower().replace(" ", "-").replace(".", "").replace("#", "sharp")
-        count = len(repos_list)
-        lines.append(f'  <a href="{{{{ site.baseurl }}}}/{slug}.html" class="lang-card">')
-        lines.append(f'    <span class="lang-name">{lang}</span>')
-        lines.append(f'    <span class="lang-count">{count}</span>')
-        lines.append("  </a>")
-    
-    lines.append("</div>")
-    lines.append("")
-    return "\n".join(lines)
 
 
-def generate_language_page(lang: str, repos_list: list[dict], baseurl: str) -> str:
-    lines = [
-        "---",
-        f"title: {lang}",
-        "---",
-        "",
-        f'<a href="{{{{ site.baseurl }}}}/" class="back-link">← All Languages</a>',
-        "",
-        f"<h1>{lang}</h1>",
-        f"<p>{len(repos_list)} repositories</p>",
-        "",
-        '<div class="repo-list">',
-    ]
-    
-    for repo in sorted(repos_list, key=lambda r: -r.get("stargazers_count", 0)):
-        name = repo["full_name"]
-        desc = (repo.get("description") or "").replace("|", "\\|")
-        if len(desc) > 100:
-            desc = desc[:97] + "..."
-        stars = repo.get("stargazers_count", 0)
-        updated = repo.get("updated_at", "")[:10]
-        lines.append(f'<div class="repo-item">')
-        lines.append(f'  <div class="repo-header">')
-        lines.append(f'    <a href="https://github.com/{name}" class="repo-name">{name}</a>')
-        lines.append(f'    <span class="repo-stars">★ {stars:,}</span>')
-        lines.append(f"  </div>")
-        if desc:
-            lines.append(f'  <p class="repo-desc">{desc}</p>')
-        lines.append(f'  <span class="repo-date">Updated: {updated}</span>')
-        lines.append(f"</div>")
-    
-    lines.append("</div>")
-    lines.append("")
-    return "\n".join(lines)
-
+# ==================== main ====================
 
 def main():
     token = os.environ.get("GITHUB_TOKEN", "")
@@ -349,66 +373,47 @@ def main():
     by_language = group_by_language(repos)
     repo_name = repo_full_name.split("/")[-1] if repo_full_name else ""
     
+    # Generate gh-pages site
     os.makedirs("_site", exist_ok=True)
     os.makedirs("_site/assets", exist_ok=True)
     os.makedirs("_site/_layouts", exist_ok=True)
     
-    # Generate _config.yml
-    config = generate_config(username, repo_name)
     with open("_site/_config.yml", "w", encoding="utf-8") as f:
-        f.write(config)
+        f.write(generate_config(username, repo_name))
     
-    # Generate CSS
-    css = generate_css()
     with open("_site/assets/style.css", "w", encoding="utf-8") as f:
-        f.write(css)
+        f.write(generate_css())
     
-    # Generate layout
-    layout = generate_layout()
     with open("_site/_layouts/default.html", "w", encoding="utf-8") as f:
-        f.write(layout)
+        f.write(generate_layout())
     
-    # Generate index
-    index = generate_readme_index(username, by_language, len(repos))
     with open("_site/index.md", "w", encoding="utf-8") as f:
-        f.write(index)
+        f.write(generate_site_index(username, by_language, len(repos)))
     
-    # Generate README.md for GitHub view
-    site_url = f"https://{username}.github.io/{repo_name}/"
-    readme_content = f"""# {username}'s Star List
-
-> **{len(repos)}** repos starred
-
-[View Static Site →]({site_url})
-"""
-    with open("_site/README.md", "w", encoding="utf-8") as f:
-        f.write(readme_content)
-    
-    # Generate language pages
     for lang, repos_list in by_language.items():
         slug = lang.lower().replace(" ", "-").replace(".", "").replace("#", "sharp")
-        content = generate_language_page(lang, repos_list, f"/{repo_name}")
         with open(f"_site/{slug}.md", "w", encoding="utf-8") as f:
-            f.write(content)
+            f.write(generate_language_page(lang, repos_list))
     
-    print(f"Generated {len(by_language) + 1} files in _site/")
+    # gh-pages README with link to site
+    site_url = f"https://{username}.github.io/{repo_name}/"
+    with open("_site/README.md", "w", encoding="utf-8") as f:
+        f.write(f"# {username}'s Star List\n\n> **{len(repos)}** repos starred\n\n[View Static Site →]({site_url})\n")
     
-    # Generate readable README files
+    print(f"Generated site files in _site/")
+    
+    # Generate readme branch files
     os.makedirs("readme_files", exist_ok=True)
     
-    # Generate README index
-    readme_index = generate_readme_index(username, by_language, len(repos))
     with open("readme_files/README.md", "w", encoding="utf-8") as f:
-        f.write(readme_index)
+        f.write(generate_readme_index(username, by_language, len(repos)))
     
-    # Generate language files
     for lang, repos_list in by_language.items():
         slug = lang.lower().replace(" ", "-").replace(".", "").replace("#", "sharp")
-        content = generate_readme_lang(lang, repos_list)
         with open(f"readme_files/{slug}.md", "w", encoding="utf-8") as f:
-            f.write(content)
+            f.write(generate_readme_lang(lang, repos_list))
     
-    print(f"Generated {len(by_language) + 1} files in readme_files/")
+    print(f"Generated readme files in readme_files/")
 
 
 if __name__ == "__main__":
